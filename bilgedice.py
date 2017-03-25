@@ -5,8 +5,9 @@ import sys
 import random
 
 PLAYER_NAMES = ["Monty", "Krawk", "Bill"]
-NUM_PLAYERS = 4;
-NUM_DICE = 6;
+NUM_PLAYERS = 4
+NUM_DICE = 6
+currHands = {"Monty": [], "Krawk": [], "Bill": []}
 
 class Game:
     def __init__(self):
@@ -33,9 +34,14 @@ class Player:
             self.canMove = false
 
     def canMove(self):
-        return self.__canMove;
+        return self.__canMove
 
 class Enemy(Player):
     def __init__(self, pid, name):
         Player.__init__(self, pid)
         self.name = name
+
+print "Hi"
+print "Current Hands:"
+for name in PLAYER_NAMES:
+    print name + " has the hand: " + currHands[name]
