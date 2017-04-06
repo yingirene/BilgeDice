@@ -92,7 +92,8 @@ class AI(Player):
         else:
             print "ERROR: invalid pid"
             exit(1)
-        ai_keep_list = [int(k) for k in ai_keep_list]
+        if not isinstance(ai_keep_list, list):
+            ai_keep_list = [ai_keep_list]
         if len(ai_keep_list) < 1:
                 ai_keep_list.append(max(dice))
         Player.keep(self, ai_keep_list)
@@ -123,11 +124,22 @@ class Game:
 
         keepList = []
         if player.name == YOUR_NAME:
-            print "Your Rolls: "
-            print str(dice_vals)
             while True:
-                playerIn = raw_input("Select at least one die value: ")
+                print "Your Rolls:"
+                print str(dice_vals)
+                playerIn = raw_input("Select at least one die value: ").rstrip().lstrip()
+                if playerIn.lower() == "quit":
+                    print "Quitting game."
+                    exit(1)
+                elif playerIn.lower() == "help":
+                    self.printHelp()
+                    continue
+                elif not playerIn.isdigit():
+                    print "ERROR: please enter a number."
+                    continue
                 keepList = str(playerIn).split()
+                if not isinstance(keepList, list):
+                    keepList = [int(keepList)]
                 keepList = [int(k) for k in keepList]
                 if len(keepList) < 1:
                     print "You must keep at least one value!"
@@ -200,22 +212,32 @@ class Game:
                     self.max_score = total
                     winner_name = k
         if self.isOver():
+            if winner_name == YOUR_NAME:
+                print "Congratulations!!"
             self.printQualified(qual_players)
             win_msg = " are " if winner_name == "You" else " is "
             print winner_name + win_msg + "the winner!!!"
 
     def printHelp(self):
-        print "Summary:"
-        print "You are trying to get a higher total score than your opponents: Monty, Krawk, and Bill."
-        print ""
-        print "How to play:"
-        print "At the start of the game, there are six dice."
-        print "At each turn, choose at least 1 value and those dice are removed from play."
-        print "You must select at least one die value to keep before you can re-roll."
-        print "You continue until all six dice are kept."
-        print ""
-        print "In order to qualify for a round, you need to obtain the qualifier values."
-        print "The qualifying player with the highest total score wins."
+        print """
+----------------------------------------------------------------------------------------------
+Summary:
+You are trying to get a higher total score than your opponents: Monty, Grimtooth, and Deadeye.
+
+How to play:
+At the start of the game, there are six dice.
+On each turn, choose at least 1 value and those dice are removed from play.
+You must select at least one die value to keep before you can re-roll.
+You continue until all six dice are kept.
+
+In order to qualify for a round, you need to obtain the qualifier values.
+The qualifying player with the highest total score wins.
+
+Notes:
+    Game looks best in a window of minimum width: 95 columns
+    Available commands: help, quit
+----------------------------------------------------------------------------------------------
+        """
 
     def printIntro(self):
         welcome_banner = """
@@ -244,12 +266,15 @@ class Game:
         while True:
             if self.isOver():
                 self.printScores()
-                playerIn = raw_input("Would you like to continue playing?: ")
-                if playerIn.lower() == "yes":
-                  self.startGame()  
-                else:
-                    print "Quitting Game."
-                    break
+                while self.isOver():
+                    playerIn = raw_input("Play again?: (yes/no)")
+                    if playerIn.lower() == "yes":
+                        self.startGame()  
+                    elif playerIn.lower() == "help":
+                        self.printHelp()
+                    elif "quit" or "no":
+                        print "Quitting Game."
+                        exit(1)
             self.printTurn()
             for (k,v) in players.items():
                 currPlayer = v
