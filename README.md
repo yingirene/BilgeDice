@@ -1,7 +1,7 @@
 # BilgeDice
 
 # Resources:
-ASCII fonts:
+ASCII fonts used:
 * ANSI Shadow
 * Cybermedium
 
