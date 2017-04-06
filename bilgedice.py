@@ -17,8 +17,6 @@ class Player:
 
     def keep(self, list):
         self.hand.extend(list)
-        if len(self.hand) == NUM_DICE:
-            self.canMove = False
         return list
 
     def canMove(self):
@@ -41,11 +39,15 @@ class AI(Player):
     def keep(self, dice):
         ai_keep_list = []
         if self.pid == 1:
+            #Monty: Aiming for Qualifiers then Highest Score
             print "Monty"
         elif self.pid == 2:
+            #Krawk: Aiming for Highest Score ignoring Qualifiers
             print "Krawk"
         elif self.pid == 3:
-            print "Bill"
+            #Bill: Random Brute Force Choice
+            num_to_keep = random.randint(1,len(dice))
+            ai_keep_list = random.sample(range(0,len(dice)), num_to_keep)
         else:
             print "ERROR: invalid pid"
             exit(1)
@@ -150,7 +152,7 @@ class Game:
             self.printQualified()
             for (k,v) in players.items():
                 currPlayer = v
-                if currPlayer.canMove:
+                if currPlayer.canMove():
                     self.makeMove(currPlayer)
 
 isMultiplayer = False
