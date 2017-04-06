@@ -16,8 +16,6 @@ class Player:
         self.hand = []
 
     def keep(self, list):
-        if len(list) < 1:
-            print "ERROR: must keep at least 1 value"
         self.hand.extend(list)
         return list
 
@@ -69,12 +67,14 @@ class AI(Player):
 
         elif self.pid == 2:
             #Krawk: Aiming for Highest Score ignoring Qualifiers
-            ai_keep_list = [d for d in dice if d > 4]
+            ai_keep_list.extend([d for d in dice if d > 4])
             
         elif self.pid == 3:
             #Bill: Random Brute Force Choice
             num_to_keep = random.randint(1,len(dice))
-            ai_keep_list = random.sample(range(0,len(dice)), num_to_keep)
+            rand_ind = random.sample(range(0,len(dice)), num_to_keep)
+            for d_ind in rand_ind:
+                ai_keep_list.append(dice[d_ind])
 
         else:
             print "ERROR: invalid pid"
