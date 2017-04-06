@@ -43,7 +43,7 @@ class AI(Player):
             print "Monty"
         elif self.pid == 2:
             #Krawk: Aiming for Highest Score ignoring Qualifiers
-            print "Krawk"
+            ai_keep_list = [d for d in dice if d > 4]
         elif self.pid == 3:
             #Bill: Random Brute Force Choice
             num_to_keep = random.randint(1,len(dice))
