@@ -36,11 +36,35 @@ class AI(Player):
     def __init__(self, name, pid):
         Player.__init__(self, name, pid)
 
-    def keep(self, dice):
+    def keep(self, dice, game):
         ai_keep_list = []
         if self.pid == 1:
             #Monty: Aiming for Qualifiers then Highest Score
-            print "Monty"
+            dice_copy = [d for d in dice]
+            count_unqual = 0
+            if not self.isQualified():
+                for q_ind in range(len(self.qualified)):
+                    if not self.qualified[q_ind]:
+                        curr_qual = game.qualifiers[q_ind]
+                        if curr_qual in dice_copy:
+                            dice_copy.remove(curr_qual)
+                            ai_keep_list.append(curr_qual)
+                            self.setQualified(q_ind)
+                        else:
+                            count_unqual += 1
+            #Choose values > 6; leave <= 3 if not qualified
+            sorted_dice = sorted(dice_copy, reverse=True) 
+            if not self.isQualified():
+                #Leave <= count_unqual + 1
+                if len(sorted_dice) <= (count_unqual + 1):
+                    if len(ai_keep_list) <= 0:
+                        #Keep at least 1 value
+                        ai_keep_list = sorted_dice[0]
+                else:
+                    ai_keep_list.extend(sorted_dice[:-(count_unqual + 1)])
+            else:
+                ai_keep_list.extend([sd for sd in sorted_dice if sd > 4])
+
         elif self.pid == 2:
             #Krawk: Aiming for Highest Score ignoring Qualifiers
             ai_keep_list = [d for d in dice if d > 4]
@@ -97,7 +121,7 @@ class Game:
                 player.keep(keepList)
                 break
         else:
-            keepList = player.keep(dice_vals)
+            keepList = player.keep(dice_vals, self)
 
         #Check if player is qualified after the move
         if not player.isQualified():
