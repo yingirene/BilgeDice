@@ -152,13 +152,16 @@ class Game:
                 elif playerIn.lower() == "help":
                     self.printHelp()
                     continue
+                elif playerIn.lower() == "score":
+                    self.printScores()
+                    continue
                 keepList = str(playerIn).split()
                 if not isinstance(keepList, list):
                     keepList = [int(keepList)]
                 isInvalid = False
                 for k_ind in range(len(keepList)):
                     if not keepList[k_ind].isdigit():
-                        print "ERROR: please enter a number."
+                        print "ERROR: please enter a number or a valid command."
                         isInvalid = True
                         break
                 if isInvalid:
@@ -211,6 +214,7 @@ class Game:
             handMsg = " have " if (name == "You") else " has "
             print name + handMsg + "the hand: " + " ".join(str(hand_val) for hand_val in players[name].hand) + sep_msg + '\033[1m' + " ".join(str(qual_val) for qual_val in players[name].qualifiers) + '\033[0m'
         print "The qualifiers are " + " and ".join(str(q_val) for q_val in self.qualifiers)
+        print ""
 
     def getQualified(self):
         ret = []
@@ -231,9 +235,10 @@ class Game:
         return False
 
     def printScores(self):
+        print ""
         qual_players = self.getQualified()
-        scoreMsg = "final" if self.isOver() else "current"
-        print "The " + scoreMsg + " scores are: "
+        scoreMsg = "\033[1m FINAL SCORES \033[0m" if self.isOver() else "Current Scores"
+        print "-- " + scoreMsg + " --"
         for name in PLAYER_NAMES:
             k = name
             v = players[k]
@@ -248,6 +253,7 @@ class Game:
                     if not k in self.winner_name:
                         self.winner_name.append(k)
         if self.isOver():
+            print ""
             if len(self.winner_name) > 1:
                 print "It's a tie!"
                 join_msg = ", ".join(self.winner_name[:-1]) if len(self.winner_name) > 2 else self.winner_name[0]
@@ -259,6 +265,7 @@ class Game:
                 print "Congratulations!!"
             win_msg = " are " if self.winner_name[0] == "You" else " is "
             print self.winner_name[0] + win_msg + "the winner!"
+        print "--------------------\n"
 
     def printHelp(self):
         print """
@@ -278,7 +285,7 @@ The qualifying player with the highest total score wins.
 
 Notes:
     Game looks best in a window of minimum width: 95 columns
-    Available commands: help, quit
+    Available commands: score, help, quit
 ----------------------------------------------------------------------------------------------
         """
 
@@ -309,6 +316,7 @@ Notes:
         while True:
             if self.isOver():
                 self.printTurn()
+                print ""
                 self.printScores()
                 while self.isOver():
                     playerIn = raw_input("Play again? (yes/no): ")
@@ -316,9 +324,13 @@ Notes:
                         self.startGame()  
                     elif playerIn.lower() == "help":
                         self.printHelp()
+                    elif playerIn.lower() == "score":
+                        self.printScores()
                     elif "quit" or "no":
                         print "Quitting Game."
                         exit(1)
+                    else:
+                        print "ERROR: invalid command."
                 print ""
             self.printTurn()
             for (k,v) in players.items():
@@ -326,6 +338,7 @@ Notes:
                 if currPlayer.canMove():
                     self.makeMove(currPlayer)
             self.numTurn += 1
+            print ""
 
 isMultiplayer = False
 #isMultiplayer = (raw_input("Would you like to play multiplayer?: ") == "Yes") ? True : False
