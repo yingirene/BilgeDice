@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 '''
 A text-only console version of the game Bilge Dice from Neopets
 '''
@@ -91,6 +92,7 @@ class AI(Player):
         else:
             print "ERROR: invalid pid"
             exit(1)
+        ai_keep_list = [int(k) for k in ai_keep_list]
         if len(ai_keep_list) < 1:
                 ai_keep_list.append(max(dice))
         Player.keep(self, ai_keep_list)
@@ -117,8 +119,7 @@ class Game:
     def makeMove(self, player):
         #Print out new dice values
         num_rem_dice = NUM_DICE - len(player.hand)
-        dice_vals = random.sample(range(1,7), num_rem_dice)
-        
+        dice_vals = [random.randint(1,6) for _ in [0] * num_rem_dice]
 
         keepList = []
         if player.name == YOUR_NAME:
@@ -128,8 +129,6 @@ class Game:
                 playerIn = raw_input("Select at least one die value: ")
                 keepList = str(playerIn).split()
                 keepList = [int(k) for k in keepList]
-                if len(keepList) == 1:
-                    print keepList
                 if len(keepList) < 1:
                     print "You must keep at least one value!"
                     continue
@@ -218,14 +217,35 @@ class Game:
         print "In order to qualify for a round, you need to obtain the qualifier values."
         print "The qualifying player with the highest total score wins."
 
+    def printIntro(self):
+        welcome_banner = """
+                    _ _ _ ____ _    ____ ____ _  _ ____    ___ ____ 
+                    | | | |___ |    |    |  | |\/| |___     |  |  | 
+                    |_|_| |___ |___ |___ |__| |  | |___     |  |__| 
+                                                            
+        """
+        title_banner = """
+            ██████╗ ██╗██╗      ██████╗ ███████╗    ██████╗ ██╗ ██████╗███████╗
+            ██╔══██╗██║██║     ██╔════╝ ██╔════╝    ██╔══██╗██║██╔════╝██╔════╝
+            ██████╔╝██║██║     ██║  ███╗█████╗      ██║  ██║██║██║     █████╗  
+            ██╔══██╗██║██║     ██║   ██║██╔══╝      ██║  ██║██║██║     ██╔══╝  
+            ██████╔╝██║███████╗╚██████╔╝███████╗    ██████╔╝██║╚██████╗███████╗
+            ╚═════╝ ╚═╝╚══════╝ ╚═════╝ ╚══════╝    ╚═════╝ ╚═╝ ╚═════╝╚══════╝
+                                                                               
+
+        """
+
+        print welcome_banner
+        print title_banner
+
     def runGame(self):
-        print "Welcome! Are you ready to play Bilge Dice?"
+        self.printIntro()
         self.printHelp()
         while True:
             if self.isOver():
                 self.printScores()
                 playerIn = raw_input("Would you like to continue playing?: ")
-                if playerIn == "Yes":
+                if playerIn.lower() == "yes":
                   self.startGame()  
                 else:
                     print "Quitting Game."
