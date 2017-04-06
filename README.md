@@ -1,6 +1,6 @@
 # BilgeDice
 
-#Resources:
+# Resources:
 ASCII fonts:
 ANSI Shadow
 Cybermedium
