@@ -2,6 +2,6 @@
 
 # Resources:
 ASCII fonts:
-ANSI Shadow
-Cybermedium
+* ANSI Shadow
+* Cybermedium
 Both fonts from http://patorjk.com/software/taag/
