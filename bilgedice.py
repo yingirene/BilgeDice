@@ -16,6 +16,8 @@ class Player:
         self.hand = []
 
     def keep(self, list):
+        if len(list) < 1:
+            print "ERROR: must keep at least 1 value"
         self.hand.extend(list)
         return list
 
@@ -68,13 +70,17 @@ class AI(Player):
         elif self.pid == 2:
             #Krawk: Aiming for Highest Score ignoring Qualifiers
             ai_keep_list = [d for d in dice if d > 4]
+            
         elif self.pid == 3:
             #Bill: Random Brute Force Choice
             num_to_keep = random.randint(1,len(dice))
             ai_keep_list = random.sample(range(0,len(dice)), num_to_keep)
+
         else:
             print "ERROR: invalid pid"
             exit(1)
+        if len(ai_keep_list) < 1:
+                ai_keep_list.append(max(dice))
         Player.keep(self, ai_keep_list)
 
 
@@ -85,9 +91,12 @@ class Game:
     def __init__(self):
         self.qualifiers = [random.randint(1,6), random.randint(1,6)]
         self.numTurn = 0
+        self.num_active_players = NUM_PLAYERS
 
     def startGame(self):
+        self.qualifiers = [random.randint(1,6), random.randint(1,6)]
         self.numTurn = 0
+        self.num_active_players = NUM_PLAYERS
         for (k,v) in players.items():
             v.reset()
 
@@ -104,6 +113,9 @@ class Game:
             while True:
                 playerIn = raw_input("Which values will you keep? (Separate with spaces): ")
                 keepList = str(playerIn).split()
+                keepList = [int(k) for k in keepList]
+                if len(keepList) == 1:
+                    print keepList
                 if len(keepList) < 1:
                     print "You must keep at least one value!"
                     continue
@@ -115,6 +127,7 @@ class Game:
                         is_valid_keep = False
                         break
                     else:
+                        #Account for number of explicit values
                         dice_copy.remove(int(keep_val))
                 if not is_valid_keep:
                     continue
@@ -128,39 +141,57 @@ class Game:
             for q_ind in range(len(self.qualifiers)):
                 if keepList and self.qualifiers[q_ind] in keepList:
                     player.setQualified(q_ind)
-        self.numTurn = (self.numTurn + 1) % NUM_PLAYERS
+
+        #Check if player is still active
+        if not player.canMove():
+            self.num_active_players -= 1
+            print player.name + " is done."
 
     def printTurn(self):
+        print "-- TURN " + str(self.numTurn) + " --"
         print "Current Hands:"
         for name in PLAYER_NAMES:
             handMsg = " have " if (name == "You") else " has "
             print name + handMsg + "the hand: " + " ".join(str(hand_val) for hand_val in players[name].hand)
         print "The qualifiers are " + " and ".join(str(q_val) for q_val in self.qualifiers)
 
-    def printQualified(self):
-        for name in PLAYER_NAMES:
-            if players[name].isQualified():
-                qualMsg = " are " if (name == "You") else " is "
-                print name + qualMsg + "qualified."
+    def getQualified(self):
+        ret = []
+        for (k,v) in players.items():
+            if v.isQualified():
+                ret.append(v)
+        return ret
+
+    def printQualified(self, qual_list):
+        for p in qual_list:
+            name = p.name
+            qualMsg = " are " if (name == "You") else " is "
+            print name + qualMsg + "qualified."
 
     def isOver(self):
-        if self.numTurn == NUM_DICE:
+        if self.num_active_players <= 0:
             return True
         return False
 
     def printScores(self):
+        qual_players = self.getQualified()
         scoreMsg = "final" if self.isOver() else "current"
         print "The " + scoreMsg + " scores are: "
         max_total = 0
         winner_name = ""
         for k,v in players.items():
-            total = str(sum(v.hand))
-            print k + " has a total of " + total
-            if total > max_total:
-                max_total = total
-                winner_name = k
+            total = sum(v.hand)
+            total_msg = " have " if YOUR_NAME == "You" else " has "
+            print k + total_msg + "a total of " + str(total)
+            if v in qual_players:
+                if total > max_total:
+                    max_total = total
+                    winner_name = k
+            else:
+                print "But isn't qualified."
         if self.isOver():
-            print winner_name + " is the winner!!!"
+            win_msg = " are " if winner_name == "You" else " is "
+            print winner_name + win_msg + "the winner!!!"
 
     def runGame(self):
         while True:
@@ -173,11 +204,11 @@ class Game:
                     print "Quitting Game."
                     break
             self.printTurn()
-            self.printQualified()
             for (k,v) in players.items():
                 currPlayer = v
                 if currPlayer.canMove():
                     self.makeMove(currPlayer)
+            self.numTurn += 1
 
 isMultiplayer = False
 #isMultiplayer = (raw_input("Would you like to play multiplayer?: ") == "Yes") ? True : False
