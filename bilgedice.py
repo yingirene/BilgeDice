@@ -4,7 +4,7 @@ A text-only console version of the game Bilge Dice from Neopets
 import sys
 import random
 
-PLAYER_NAMES = ["Monty", "Krawk", "Bill"]
+PLAYER_NAMES = ["Monty", "Grimtooth", "Deadeye"]
 NUM_PLAYERS = 4
 NUM_DICE = 6
 
@@ -84,7 +84,7 @@ class AI(Player):
         Player.keep(self, ai_keep_list)
 
 
-players = {"You": Player("You", 0), "Monty": AI("Monty", 1), "Krawk": AI("Krawk", 2), "Bill": AI("Bill", 3)}
+players = {"You": Player("You", 0), "Monty": AI("Monty", 1), "Grimtooth": AI("Grimtooth", 2), "Deadeye": AI("Deadeye", 3)}
 
 
 class Game:
@@ -108,10 +108,10 @@ class Game:
 
         keepList = []
         if player.name == YOUR_NAME:
-            print "Keep at least one of the following: "
+            print "Your Rolls: "
             print str(dice_vals)
             while True:
-                playerIn = raw_input("Which values will you keep? (Separate with spaces): ")
+                playerIn = raw_input("Select at least one die value: ")
                 keepList = str(playerIn).split()
                 keepList = [int(k) for k in keepList]
                 if len(keepList) == 1:
@@ -193,7 +193,22 @@ class Game:
             win_msg = " are " if winner_name == "You" else " is "
             print winner_name + win_msg + "the winner!!!"
 
+    def printHelp(self):
+        print "Summary:"
+        print "You are trying to get a higher total score than your opponents: Monty, Krawk, and Bill."
+        print ""
+        print "How to play:"
+        print "At the start of the game, there are six dice."
+        print "At each turn, choose at least 1 value and those dice are removed from play."
+        print "You must select at least one die value to keep before you can re-roll."
+        print "You continue until all six dice are kept."
+        print ""
+        print "In order to qualify for a round, you need to obtain the qualifier values."
+        print "The qualifying player with the highest total score wins."
+
     def runGame(self):
+        print "Welcome! Are you ready to play Bilge Dice?"
+        self.printHelp()
         while True:
             if self.isOver():
                 self.printScores()
