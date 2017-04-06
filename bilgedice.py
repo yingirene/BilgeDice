@@ -63,14 +63,26 @@ class AI(Player):
                 else:
                     ai_keep_list.extend(sorted_dice[:-(count_unqual + 1)])
             else:
-                ai_keep_list.extend([sd for sd in sorted_dice if sd > 4])
+                ai_keep_list.extend([sd for sd in sorted_dice if sd > 5])
 
         elif self.pid == 2:
-            #Krawk: Aiming for Highest Score ignoring Qualifiers
-            ai_keep_list.extend([d for d in dice if d > 4])
+            dice_copy = [d for d in dice]  
+            count_unqual = 0
+            #Grimtooth: Aiming for Highest Score and Qualifiers as low-priority
+            if not self.isQualified():
+                if sum(self.hand) > game.max_score:
+                    for q_ind in range(len(self.qualified)):
+                        if not self.qualified[q_ind]:
+                            curr_qual = game.qualifiers[q_ind]
+                            if curr_qual in dice_copy:
+                                dice_copy.remove(curr_qual)
+                                ai_keep_list.append(curr_qual)
+                                self.setQualified(q_ind)
+                                count_unqual += 1
+            ai_keep_list.extend([d for d in dice if d > 5][:-(count_unqual)])
             
         elif self.pid == 3:
-            #Bill: Random Brute Force Choice
+            #Deadeye: Random Brute Force Choice
             num_to_keep = random.randint(1,len(dice))
             rand_ind = random.sample(range(0,len(dice)), num_to_keep)
             for d_ind in rand_ind:
@@ -92,11 +104,13 @@ class Game:
         self.qualifiers = [random.randint(1,6), random.randint(1,6)]
         self.numTurn = 0
         self.num_active_players = NUM_PLAYERS
+        self.max_score = 0
 
     def startGame(self):
         self.qualifiers = [random.randint(1,6), random.randint(1,6)]
         self.numTurn = 0
         self.num_active_players = NUM_PLAYERS
+        self.max_score = 0
         for (k,v) in players.items():
             v.reset()
 
@@ -177,19 +191,17 @@ class Game:
         qual_players = self.getQualified()
         scoreMsg = "final" if self.isOver() else "current"
         print "The " + scoreMsg + " scores are: "
-        max_total = 0
         winner_name = ""
         for k,v in players.items():
             total = sum(v.hand)
-            total_msg = " have " if YOUR_NAME == "You" else " has "
+            total_msg = " have " if v.name == "You" else " has "
             print k + total_msg + "a total of " + str(total)
             if v in qual_players:
-                if total > max_total:
-                    max_total = total
+                if total > self.max_score:
+                    self.max_score = total
                     winner_name = k
-            else:
-                print "But isn't qualified."
         if self.isOver():
+            self.printQualified(qual_players)
             win_msg = " are " if winner_name == "You" else " is "
             print winner_name + win_msg + "the winner!!!"
 
