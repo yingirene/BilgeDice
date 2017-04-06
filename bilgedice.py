@@ -60,7 +60,7 @@ class AI(Player):
                             count_unqual += 1
             #Choose values > 6; leave <= 3 if not qualified
             sorted_dice = sorted(dice_copy, reverse=True) 
-            if not self.isQualified():
+            if not self.isQualified() and len(sorted_dice) > 0:
                 #Leave <= count_unqual + 1
                 if len(sorted_dice) <= (count_unqual + 1):
                     if len(ai_keep_list) <= 0:
@@ -125,6 +125,11 @@ class Game:
         self.num_active_players = NUM_PLAYERS
         self.max_score = 0
         self.winner_name = []
+        self.num_games = 0
+        self.num_wins = 0
+        self.prev_is_win = False
+        self.best_win_streak = 0
+        self.curr_win_streak = 0
 
     def startGame(self):
         self.qualifiers = [random.randint(1,6), random.randint(1,6)]
@@ -155,6 +160,9 @@ class Game:
                 elif playerIn.lower() == "score":
                     self.printScores()
                     continue
+                elif playerIn.lower() == "stats":
+                    self.printStats()
+                    continue
                 keepList = str(playerIn).split()
                 if not isinstance(keepList, list):
                     keepList = [int(keepList)]
@@ -183,11 +191,11 @@ class Game:
                 if not is_valid_keep:
                     continue
                 #Separate the qualifiers from the rest of the hand
-                for k_val in keepList:
-                    for gq_ind in range(len(self.qualifiers)):
-                        if self.qualifiers[gq_ind] == k_val and not player.qualified[gq_ind]:
-                            print "found a new qualifier"
-                            player.qualified[gq_ind] = True
+                keepList_copy = [kp for kp in keepList]
+                for k_val in keepList_copy:
+                    for sq_ind in range(len(self.qualifiers)):
+                        if self.qualifiers[sq_ind] == k_val and not player.qualified[sq_ind]:
+                            player.qualified[sq_ind] = True
                             player.qualifiers.append(k_val)
                             keepList.remove(k_val)
                             break
@@ -253,19 +261,41 @@ class Game:
                     if not k in self.winner_name:
                         self.winner_name.append(k)
         if self.isOver():
+            self.num_games += 1
             print ""
+            if len(self.winner_name) < 1:
+                print "Everyone loses!"
+                return
             if len(self.winner_name) > 1:
                 print "It's a tie!"
-                join_msg = ", ".join(self.winner_name[:-1]) if len(self.winner_name) > 2 else self.winner_name[0]
+                join_msg = (", ".join(self.winner_name[:-1]) + ",") if len(self.winner_name) > 2 else self.winner_name[0]
                 print "Between " + join_msg + " and " + self.winner_name[-1]
                 if not YOUR_NAME in self.winner_name:
                     print "You lose!"
                 return
             if self.winner_name[0] == YOUR_NAME:
                 print "Congratulations!!"
+                self.num_wins += 1
+                if self.prev_is_win:
+                    self.curr_win_streak += 1
+                else:
+                    if self.curr_win_streak > self.best_win_streak:
+                        self.best_win_streak = self.curr_win_streak
+                    self.curr_win_streak = 1
+                self.prev_is_win = True
+            else:
+                self.prev_is_win = False
             win_msg = " are " if self.winner_name[0] == "You" else " is "
             print self.winner_name[0] + win_msg + "the winner!"
         print "--------------------\n"
+
+    def printStats(self):
+        print ""
+        print "-- Current Stats --"
+        print '{0: ^6}'.format("Games") + "|" + '{0: ^6}'.format("Wins") + "|" + '{0: ^16}'.format("Current Streak") + "|" + '{0: ^16}'.format("Best Streak")
+        print "------|------|----------------|----------------"
+        print '{0: ^6}'.format(self.num_games) + "|" + '{0: ^6}'.format(self.num_wins) + "|" + '{0: ^16}'.format(self.curr_win_streak) + "|" + '{0: ^16}'.format(self.best_win_streak)
+        print ""
 
     def printHelp(self):
         print """
@@ -285,7 +315,7 @@ The qualifying player with the highest total score wins.
 
 Notes:
     Game looks best in a window of minimum width: 95 columns
-    Available commands: score, help, quit
+    Available commands: score, stats, help, quit
 ----------------------------------------------------------------------------------------------
         """
 
@@ -326,6 +356,8 @@ Notes:
                         self.printHelp()
                     elif playerIn.lower() == "score":
                         self.printScores()
+                    elif playerIn.lower() == "stats":
+                        self.printStats()
                     elif "quit" or "no":
                         print "Quitting Game."
                         exit(1)
