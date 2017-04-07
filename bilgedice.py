@@ -127,7 +127,6 @@ class Game:
         self.winner_name = []
         self.num_games = 0
         self.num_wins = 0
-        self.prev_is_win = False
         self.best_win_streak = 0
         self.curr_win_streak = 0
 
@@ -149,7 +148,7 @@ class Game:
         if player.name == YOUR_NAME:
             while True:
                 print "Your Rolls:"
-                print str(dice_vals)
+                print str(dice_vals) + "\n"
                 playerIn = raw_input("Select at least one die value: ").rstrip().lstrip()
                 if playerIn.lower() == "quit":
                     print "Quitting game."
@@ -169,20 +168,20 @@ class Game:
                 isInvalid = False
                 for k_ind in range(len(keepList)):
                     if not keepList[k_ind].isdigit():
-                        print "ERROR: please enter a number or a valid command."
+                        print "ERROR: please enter a number or a valid command.\n"
                         isInvalid = True
                         break
                 if isInvalid:
                     continue
                 keepList = [int(k) for k in keepList]
                 if len(keepList) < 1:
-                    print "You must keep at least one value!"
+                    print "ERROR: you must keep at least one value!\n"
                     continue
                 dice_copy = [x for x in dice_vals]
                 is_valid_keep = True
                 for keep_val in keepList:
                     if int(keep_val) not in dice_copy:
-                        print "ERROR: invalid values! Please choose again."
+                        print "ERROR: invalid values! Please choose again.\n"
                         is_valid_keep = False
                         break
                     else:
@@ -265,28 +264,23 @@ class Game:
             print ""
             if len(self.winner_name) < 1:
                 print "Everyone loses!"
-                return
-            if len(self.winner_name) > 1:
+            elif len(self.winner_name) > 1:
                 print "It's a tie!"
                 join_msg = (", ".join(self.winner_name[:-1]) + ",") if len(self.winner_name) > 2 else self.winner_name[0]
                 print "Between " + join_msg + " and " + self.winner_name[-1]
                 if not YOUR_NAME in self.winner_name:
                     print "You lose!"
-                return
-            if self.winner_name[0] == YOUR_NAME:
-                print "Congratulations!!"
-                self.num_wins += 1
-                if self.prev_is_win:
+            else:
+                if self.winner_name[0] == YOUR_NAME:
+                    print "Congratulations!!"
+                    self.num_wins += 1
                     self.curr_win_streak += 1
-                else:
                     if self.curr_win_streak > self.best_win_streak:
                         self.best_win_streak = self.curr_win_streak
-                    self.curr_win_streak = 1
-                self.prev_is_win = True
-            else:
-                self.prev_is_win = False
-            win_msg = " are " if self.winner_name[0] == "You" else " is "
-            print self.winner_name[0] + win_msg + "the winner!"
+                else:
+                    self.curr_win_streak = 0
+                win_msg = " are " if self.winner_name[0] == "You" else " is "
+                print self.winner_name[0] + win_msg + "the winner!"
         print "--------------------\n"
 
     def printStats(self):
@@ -299,10 +293,7 @@ class Game:
 
     def printHelp(self):
         print """
-----------------------------------------------------------------------------------------------
-Summary:
-You are trying to get a higher total score than your opponents: Monty, Grimtooth, and Deadeye.
-
+-------------------------------------------------------------------------------------------
 How to play:
 At the start of the game, there are six dice.
 On each turn, choose at least 1 value and those dice are removed from play.
@@ -314,9 +305,9 @@ The qualifiers are not included in the total score.
 The qualifying player with the highest total score wins.
 
 Notes:
-    Game looks best in a window of minimum width: 95 columns
+    Game looks best in a window of minimum width: 92 columns
     Available commands: score, stats, help, quit
-----------------------------------------------------------------------------------------------
+-------------------------------------------------------------------------------------------
         """
 
     def printIntro(self):
@@ -358,11 +349,11 @@ Notes:
                         self.printScores()
                     elif playerIn.lower() == "stats":
                         self.printStats()
-                    elif "quit" or "no":
+                    elif playerIn.lower() ==  "quit" or playerIn.lower() == "no":
                         print "Quitting Game."
                         exit(1)
                     else:
-                        print "ERROR: invalid command."
+                        print "ERROR: invalid command.\n"
                 print ""
             self.printTurn()
             for (k,v) in players.items():
