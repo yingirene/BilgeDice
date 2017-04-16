@@ -220,7 +220,7 @@ class Game:
         for name in PLAYER_NAMES:
             hand_msg = " have " if (name == "You") else " has "
             print name + hand_msg + "the hand: " + " ".join(str(hand_val) for hand_val in players[name].hand) + sep_msg + '\033[1m' + " ".join(str(qual_val) for qual_val in players[name].qualifiers) + '\033[0m'
-        print "The qualifiers are " + " and ".join(str(q_val) for q_val in self.qualifiers)
+        print "\nThe qualifiers are " + " and ".join(str(q_val) for q_val in self.qualifiers)
         print ""
 
     def get_qualified(self):
@@ -281,6 +281,8 @@ class Game:
                     self.curr_win_streak = 0
                 win_msg = " are " if self.winner_name[0] == "You" else " is "
                 print self.winner_name[0] + win_msg + "the winner!"
+        if not self.is_over():
+            print "\nThe qualifiers are " + " and ".join(str(q_val) for q_val in self.qualifiers)
         print "--------------------\n"
 
     def print_stats(self):
