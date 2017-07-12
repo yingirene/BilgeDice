@@ -39,6 +39,20 @@ class AI(Player):
     def __init__(self, name, pid):
         Player.__init__(self, name, pid)
 
+    def kept_qualifiers(self, dice, game, mark):
+        num_chosen = 0
+        dice_copy = [d for d in dice]
+        for q_ind in range(len(self.qualified)):
+            if not self.qualified[q_ind]:
+                curr_qual = game.qualifiers[q_ind]
+                if curr_qual in dice_copy:
+                    dice_copy.remove(curr_qual)
+                    if mark:
+                        self.qualifiers.append(curr_qual)
+                        num_chosen += 1
+                        self.set_qualified(q_ind)
+        return (dice_copy, num_chosen)
+
     def keep(self, dice, game):
         ai_keep_list = []
         num_chosen = 0
@@ -73,21 +87,17 @@ class AI(Player):
 
         elif self.pid == 2:
             dice_copy = [d for d in dice]  
-            count_unqual = 0
+            select_dice = [d for d in dice_copy if d > 5]
             #Grimtooth: Aiming for Highest Score and Qualifiers as low-priority
+            select_dice, num_chosen = self.kept_qualifiers(select_dice, game, False)
+            rem_dice = len(dice) - len(select_dice)
+            count_unqual = 2 - len(self.qualifiers)
+            select_dice = select_dice if rem_dice > count_unqual else select_dice[:rem_dice-(count_unqual)]
             if not self.is_qualified():
-                if sum(self.hand) > game.max_score:
-                    for q_ind in range(len(self.qualified)):
-                        if not self.qualified[q_ind]:
-                            curr_qual = game.qualifiers[q_ind]
-                            if curr_qual in dice_copy:
-                                dice_copy.remove(curr_qual)
-                                self.qualifiers.append(curr_qual)
-                                num_chosen += 1
-                                self.set_qualified(q_ind)
-                            else:
-                                count_unqual += 1
-            ai_keep_list.extend([d for d in dice if d > 5][:-(count_unqual)])
+                if sum(self.hand) > game.max_score or len(select_dice) < 1:
+                    dice_copy, num_chosen = self.kept_qualifiers(dice_copy, game, True)
+            if num_chosen < 1:
+                ai_keep_list.extend(select_dice)
             
         elif self.pid == 3:
             #Deadeye: Random Brute Force Choice
@@ -109,8 +119,18 @@ class AI(Player):
             exit(1)
         if not isinstance(ai_keep_list, list):
             ai_keep_list = [ai_keep_list]
-        if num_chosen < 1 and len(ai_keep_list) < 1:
-                ai_keep_list.append(max(dice))
+        if num_chosen + len(ai_keep_list) < 1:
+            chosen_val = max(dice)
+            if not self.is_qualified:
+                for q_ind in range(len(self.qualified)):
+                    if not self.qualified[q_ind]:
+                        if game.qualifiers[q_ind] == chosen_val:
+                            self.qualifiers.append(chosen_val)
+                            num_chosen += 1
+                            self.set_qualified(q_ind)
+                            return
+            ai_keep_list.append(max(dice))
+
         Player.keep(self, ai_keep_list)
 
 
@@ -212,6 +232,7 @@ class Game:
         #Check if player is still active
         if not player.can_move():
             self.num_active_players -= 1
+
 
     def print_turn(self):
         print "-- TURN " + str(self.num_turn) + " --"
